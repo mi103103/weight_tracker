@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>WEIGHT_TRACKER</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    body, html {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #0C100C;
+      color: #00FF66;
+      font-family: monospace;
+      overflow-x: hidden;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 12px 16px;
+    }
+    /* ヘッダー */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .header-title {
+      font-size: 12px;
+      font-weight: bold;
+      letter-spacing: 1.2px;
+    }
+    .refresh-btn {
+      background: #142014;
+      border: 1px solid #00AA44;
+      color: #00FF66;
+      border-radius: 2px;
+      padding: 2px 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .refresh-btn:active {
+      background: #00FF66;
+      color: #000;
+    }
+    .combo-text {
+      font-size: 12px;
+      color: #008833;
+      font-weight: bold;
+      letter-spacing: 1.2px;
+    }
+
+    /* カレンダー ＆ グラフ */
+    .calendar-card {
+      background: #070A07;
+      border: 1px solid #005522;
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 16px;
+    }
+    .calendar-nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .nav-btn {
+      color: #008833;
+      font-size: 11px;
+      cursor: pointer;
+    }
+    .month-title {
+      color: #00FF66;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .week-headers {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 10px;
+      color: #006622;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+    .calendar-grid-container {
+      position: relative;
+    }
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      position: relative;
+      z-index: 2;
+    }
+    .day-cell {
+      aspect-ratio: 0.9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      border-radius: 2px;
+      cursor: pointer;
+      color: #004411;
+    }
+    .day-cell.current-month {
+      color: #00AA44;
+    }
+    .day-cell.is-recorded {
+      color: #004411;
+    }
+    .day-cell.is-today {
+      border: 1px solid #00FF66;
+      color: #00FF66;
+      font-weight: bold;
+    }
+    .day-cell.is-selected {
+      background: rgba(0, 51, 17, 0.7);
+      border: 1px solid #00AA44;
+      font-weight: bold;
+    }
+    canvas#graphCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    /* ウィンドウ共通 */
+    .card {
+      background: #101610;
+      border: 1px solid #008833;
+      border-radius: 4px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+    .card.recorded {
+      border-color: #00FF66;
+    }
+    .card-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .time-btn {
+      background: #070A07;
+      border: 1px solid #005522;
+      color: #00AA44;
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 2px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+    .time-btn.active {
+      background: #00FF66;
+      border-color: #00FF66;
+      color: #000;
+    }
+    .dot {
+      width: 4px;
+      height: 4px;
+      border-radius: 50%;
+      background: #00FF66;
+    }
+    .time-btn.active .dot {
+      background: #000;
+    }
+    .input-label {
+      color: #00FF66;
+      font-size: 15px;
+      font-weight: bold;
+    }
+    .input-box {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      position: relative;
+    }
+    .term-input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #00FF66;
+      font-family: monospace;
+      font-size: 18px;
+      font-weight: bold;
+      width: 100%;
+    }
+    .term-input::placeholder {
+      color: #005522;
+    }
+    .suffix {
+      color: #008833;
+      font-size: 13px;
+      margin-left: 4px;
+    }
+    .btn {
+      font-family: monospace;
+      font-weight: bold;
+      font-size: 11px;
+      padding: 6px 10px;
+      border-radius: 2px;
+      border: none;
+      cursor: pointer;
+    }
+    .btn-main {
+      background: #00FF66;
+      color: #000;
+    }
+    .btn-set {
+      background: #00AA44;
+      color: #000;
+    }
+    .btn-del {
+      background: #330000;
+      color: #FF4444;
+      border: 1px solid #FF4444;
+    }
+
+    /* BMI ウィンドウ */
+    .bmi-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .bmi-badge {
+      font-size: 10px;
+      font-weight: bold;
+      padding: 2px 6px;
+      border-radius: 2px;
+      border: 1px solid;
+    }
+    .bar-container {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: #005522;
+    }
+    .bar-track {
+      flex: 1;
+      height: 14px;
+      background: #050B05;
+      border-radius: 2px;
+      position: relative;
+      overflow: hidden;
+    }
+    canvas#bmiCanvas {
+      width: 100%;
+      height: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- 1. ヘッダー -->
+    <div class="header">
+      <div class="header-title">WEIGHT_TRACKER</div>
+      <button class="refresh-btn" id="refreshBtn">↻</button>
+      <div class="combo-text" id="comboText">0 DAYS COMBO!</div>
+    </div>
+
+    <!-- 2. カレンダー ＋ 週独立折れ線グラフ -->
+    <div class="calendar-card">
+      <div class="calendar-nav">
+        <div class="nav-btn" id="prevMonthBtn">[ &lt; PREV ]</div>
+        <div class="month-title" id="monthTitle">2026/10</div>
+        <div class="nav-btn" id="nextMonthBtn">[ NEXT &gt; ]</div>
+      </div>
+      <div class="week-headers">
+        <div>MON</div><div>TUE</div><div>WED</div><div>THU</div><div>FRI</div><div>SAT</div><div>SUN</div>
+      </div>
+      <div class="calendar-grid-container" id="gridContainer">
+        <canvas id="graphCanvas"></canvas>
+        <div class="calendar-grid" id="calendarGrid"></div>
+      </div>
+    </div>
+
+    <!-- 3. INPUT ウィンドウ -->
+    <div class="card" id="inputCard">
+      <div class="card-row" style="margin-bottom: 10px;">
+        <span style="color: #00CC55; font-size: 12px;" id="dateText">&gt; DATE: -----</span>
+        <button class="time-btn" id="amBtn">AM <span class="dot" id="amDot" style="display:none;"></span></button>
+        <button class="time-btn" id="pmBtn">PM <span class="dot" id="pmDot" style="display:none;"></span></button>
+        <span style="margin-left: auto; font-size: 10px; font-weight: bold;" id="modeBadge">[NEW]</span>
+      </div>
+      <div class="card-row">
+        <span class="input-label">&gt; INPUT:</span>
+        <div class="input-box">
+          <input type="number" step="0.1" class="term-input" id="weightInput" placeholder="00.0">
+          <span class="suffix">KG</span>
+        </div>
+        <button class="btn btn-del" id="delBtn" style="display:none;">DEL</button>
+        <button class="btn btn-main" id="saveBtn">RECORD</button>
+      </div>
+    </div>
+
+    <!-- 4. HEIGHT ウィンドウ -->
+    <div class="card">
+      <div class="card-row">
+        <span class="input-label">&gt; HEIGHT:</span>
+        <div class="input-box">
+          <input type="number" step="0.1" class="term-input" id="heightInput" placeholder="000.0">
+          <span class="suffix">CM</span>
+        </div>
+        <button class="btn btn-set" id="setHeightBtn">SET</button>
+      </div>
+    </div>
+
+    <!-- 5. BMI ウィンドウ -->
+    <div class="card">
+      <div class="bmi-header">
+        <span class="input-label">&gt; BMI:</span>
+        <span style="font-size: 18px; font-weight: bold;" id="bmiVal">--.-</span>
+        <div class="bmi-badge" id="bmiBadge">NO DATA</div>
+      </div>
+      <div class="bar-container">
+        <span>15.0</span>
+        <div class="bar-track">
+          <canvas id="bmiCanvas"></canvas>
+        </div>
+        <span>35.0</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Storage Keys
+    const STORAGE_KEY = 'weight_records_storage';
+    const HEIGHT_STORAGE_KEY = 'user_height_storage';
+
+    // State Variables
+    let records = [];
+    let userHeight = null;
+    let selectedDate = new Date();
+    let selectedTimeSlot = new Date().getHours() < 12 ? 'am' : 'pm';
+    let currentMonth = new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1);
+
+    // DOM Elements
+    const weightInput = document.getElementById('weightInput');
+    const heightInput = document.getElementById('heightInput');
+    const dateText = document.getElementById('dateText');
+    const modeBadge = document.getElementById('modeBadge');
+    const inputCard = document.getElementById('inputCard');
+    const delBtn = document.getElementById('delBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    const amBtn = document.getElementById('amBtn');
+    const pmBtn = document.getElementById('pmBtn');
+    const amDot = document.getElementById('amDot');
+    const pmDot = document.getElementById('pmDot');
+    const comboText = document.getElementById('comboText');
+    const monthTitle = document.getElementById('monthTitle');
+    const calendarGrid = document.getElementById('calendarGrid');
+    const graphCanvas = document.getElementById('graphCanvas');
+    const bmiVal = document.getElementById('bmiVal');
+    const bmiBadge = document.getElementById('bmiBadge');
+    const bmiCanvas = document.getElementById('bmiCanvas');
+
+    // Initialize
+    function init() {
+      loadData();
+      setupEvents();
+      render();
+    }
+
+    function loadData() {
+      const savedHeight = localStorage.getItem(HEIGHT_STORAGE_KEY);
+      if (savedHeight) {
+        userHeight = parseFloat(savedHeight);
+        heightInput.value = userHeight.toFixed(1);
+      }
+
+      const savedRecords = localStorage.getItem(STORAGE_KEY);
+      if (savedRecords) {
+        try {
+          records = JSON.parse(savedRecords).map(r => ({
+            ...r,
+            date: new Date(r.date)
+          }));
+        } catch(e) {
+          loadDefaultRecords();
+        }
+      } else {
+        loadDefaultRecords();
+      }
+    }
+
+    function loadDefaultRecords() {
+      const today = new Date();
+      today.setHours(0,0,0,0);
+      records = [
+        { date: new Date(today.getTime() - 86400000 * 2), timeSlot: 'am', weight: 65.8 },
+        { date: new Date(today.getTime() - 86400000), timeSlot: 'am', weight: 65.5 },
+        { date: new Date(today.getTime()), timeSlot: new Date().getHours() < 12 ? 'am' : 'pm', weight: 65.2 }
+      ];
+      saveRecords();
+    }
+
+    function saveRecords() {
+      const data = records.map(r => ({
+        date: r.date.toISOString(),
+        timeSlot: r.timeSlot,
+        weight: r.weight
+      }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    }
+
+    function setupEvents() {
+      document.getElementById('refreshBtn').onclick = () => {
+        const now = new Date();
+        selectedDate = now;
+        selectedTimeSlot = now.getHours() < 12 ? 'am' : 'pm';
+        currentMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+        loadRecordToController();
+        render();
+      };
+
+      document.getElementById('prevMonthBtn').onclick = () => {
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1, 1);
+        renderCalendar();
+      };
+
+      document.getElementById('nextMonthBtn').onclick = () => {
+        currentMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1);
+        renderCalendar();
+      };
+
+      amBtn.onclick = () => { selectedTimeSlot = 'am'; loadRecordToController(); renderInputSection(); };
+      pmBtn.onclick = () => { selectedTimeSlot = 'pm'; loadRecordToController(); renderInputSection(); };
+
+      saveBtn.onclick = () => {
+        const val = parseFloat(weightInput.value);
+        if (isNaN(val)) return;
+        records = records.filter(r => !(isSameDay(r.date, selectedDate) && r.timeSlot === selectedTimeSlot));
+        records.push({ date: new Date(selectedDate), timeSlot: selectedTimeSlot, weight: val });
+        saveRecords();
+        render();
+      };
+
+      delBtn.onclick = () => {
+        records = records.filter(r => !(isSameDay(r.date, selectedDate) && r.timeSlot === selectedTimeSlot));
+        weightInput.value = '';
+        saveRecords();
+        render();
+      };
+
+      document.getElementById('setHeightBtn').onclick = () => {
+        const val = parseFloat(heightInput.value);
+        if (!isNaN(val)) {
+          userHeight = val;
+          localStorage.setItem(HEIGHT_STORAGE_KEY, val);
+          renderBMI();
+        }
+      };
+
+      weightInput.oninput = () => renderBMI();
+      heightInput.oninput = () => {
+        const val = parseFloat(heightInput.value);
+        userHeight = !isNaN(val) ? val : null;
+        renderBMI();
+      };
+    }
+
+    function isSameDay(a, b) {
+      return a.getFullYear() === b.getFullYear() &&
+             a.getMonth() === b.getMonth() &&
+             a.getDate() === b.getDate();
+    }
+
+    function calculateStreak() {
+      if (records.length === 0) return 0;
+      const dates = Array.from(new Set(records.map(r => {
+        const d = new Date(r.date);
+        d.setHours(0,0,0,0);
+        return d.getTime();
+      }))).sort((a,b) => b - a);
+
+      const today = new Date(); today.setHours(0,0,0,0);
+      const yesterday = today.getTime() - 86400000;
+
+      if (dates[0] !== today.getTime() && dates[0] !== yesterday) return 0;
+
+      let streak = 0;
+      let checkDate = dates[0];
+      for (let d of dates) {
+        if (d === checkDate) {
+          streak++;
+          checkDate -= 86400000;
+        } else break;
+      }
+      return streak;
+    }
+
+    function loadRecordToController() {
+      const rec = records.find(r => isSameDay(r.date, selectedDate) && r.timeSlot === selectedTimeSlot);
+      if (rec) {
+        weightInput.value = rec.weight.toFixed(1);
+      } else {
+        weightInput.value = '';
+      }
+    }
+
+    function render() {
+      comboText.innerText = `${calculateStreak()} DAYS COMBO!`;
+      renderInputSection();
+      renderCalendar();
+      renderBMI();
+    }
+
+    function renderInputSection() {
+      const y = selectedDate.getFullYear();
+      const m = String(selectedDate.getMonth() + 1).padStart(2, '0');
+      const d = String(selectedDate.getDate()).padStart(2, '0');
+      dateText.innerText = `> DATE: ${y}-${m}-${d}`;
+
+      amBtn.classList.toggle('active', selectedTimeSlot === 'am');
+      pmBtn.classList.toggle('active', selectedTimeSlot === 'pm');
+
+      const hasAm = records.some(r => isSameDay(r.date, selectedDate) && r.timeSlot === 'am');
+      const hasPm = records.some(r => isSameDay(r.date, selectedDate) && r.timeSlot === 'pm');
+      amDot.style.display = hasAm ? 'inline-block' : 'none';
+      pmDot.style.display = hasPm ? 'inline-block' : 'none';
+
+      const rec = records.find(r => isSameDay(r.date, selectedDate) && r.timeSlot === selectedTimeSlot);
+      if (rec) {
+        inputCard.classList.add('recorded');
+        modeBadge.innerText = '[EDIT]';
+        modeBadge.style.color = '#00FF66';
+        saveBtn.innerText = 'UPDATE';
+        delBtn.style.display = 'inline-block';
+      } else {
+        inputCard.classList.remove('recorded');
+        modeBadge.innerText = '[NEW]';
+        modeBadge.style.color = '#008833';
+        saveBtn.innerText = 'RECORD';
+        delBtn.style.display = 'none';
+      }
+    }
+
+    function renderCalendar() {
+      const year = currentMonth.getFullYear();
+      const month = currentMonth.getMonth();
+      monthTitle.innerText = `${year}/${String(month + 1).padStart(2, '0')}`;
+
+      const firstDay = new Date(year, month, 1);
+      let firstDayWeekday = firstDay.getDay() - 1; // 0=Mon, 6=Sun
+      if (firstDayWeekday < 0) firstDayWeekday = 6;
+
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      const prevMonthDays = new Date(year, month, 0).getDate();
+
+      const startDate = new Date(year, month, 1 - firstDayWeekday);
+
+      calendarGrid.innerHTML = '';
+      const totalCells = Math.ceil((daysInMonth + firstDayWeekday) / 7) * 7;
+
+      const today = new Date();
+
+      for (let i = 0; i < totalCells; i++) {
+        const cellDate = new Date(startDate.getTime() + i * 86400000);
+        const cell = document.createElement('div');
+        cell.className = 'day-cell';
+        cell.innerText = cellDate.getDate();
+
+        const isCurrentMonth = cellDate.getMonth() === month;
+        const isRecorded = records.some(r => isSameDay(r.date, cellDate));
+        const isSelected = isSameDay(cellDate, selectedDate);
+        const isToday = isSameDay(cellDate, today);
+
+        if (isCurrentMonth) cell.classList.add('current-month');
+        if (isRecorded) cell.classList.add('is-recorded');
+        if (isToday) cell.classList.add('is-today');
+        if (isSelected) cell.classList.add('is-selected');
+
+        cell.onclick = () => {
+          selectedDate = cellDate;
+          const hasAm = records.some(r => isSameDay(r.date, cellDate) && r.timeSlot === 'am');
+          const hasPm = records.some(r => isSameDay(r.date, cellDate) && r.timeSlot === 'pm');
+          if (hasAm && !hasPm) selectedTimeSlot = 'am';
+          else if (!hasAm && hasPm) selectedTimeSlot = 'pm';
+
+          loadRecordToController();
+          render();
+        };
+
+        calendarGrid.appendChild(cell);
+      }
+
+      setTimeout(() => drawGraph(startDate, totalCells), 0);
+    }
+
+    function drawGraph(startDate, totalCells) {
+      const container = document.getElementById('gridContainer');
+      const width = container.clientWidth;
+      const height = container.clientHeight;
+
+      graphCanvas.width = width;
+      graphCanvas.height = height;
+      const ctx = graphCanvas.getContext('2d');
+      ctx.clearRect(0, 0, width, height);
+
+      const totalRows = totalCells / 7;
+      const cellWidth = width / 7;
+      const cellHeight = height / totalRows;
+
+      const endDate = new Date(startDate.getTime() + (totalCells - 1) * 86400000);
+      const visibleRecords = records.filter(r => {
+        const d = new Date(r.date); d.setHours(0,0,0,0);
+        return d >= startDate && d <= endDate;
+      });
+
+      if (visibleRecords.length === 0) return;
+
+      const weights = visibleRecords.map(r => r.weight);
+      let minW = Math.min(...weights);
+      let maxW = Math.max(...weights);
+      if (minW === maxW) { minW -= 1; maxW += 1; }
+
+      const rowPointsMap = {};
+
+      visibleRecords.sort((a,b) => a.date - b.date || (a.timeSlot === 'am' ? -1 : 1)).forEach(r => {
+        const rDate = new Date(r.date); rDate.setHours(0,0,0,0);
+        const dayDiff = Math.round((rDate - startDate) / 86400000);
+        const col = dayDiff % 7;
+        const row = Math.floor(dayDiff / 7);
+
+        const xOffset = r.timeSlot === 'am' ? cellWidth * 0.3 : cellWidth * 0.7;
+        const x = col * cellWidth + xOffset;
+
+        const normalized = (r.weight - minW) / (maxW - minW);
+        const cellCenterY = row * cellHeight + cellHeight / 2;
+        const yOffset = (0.5 - normalized) * (cellHeight * 0.4);
+        const y = cellCenterY + yOffset;
+
+        if (!rowPointsMap[row]) rowPointsMap[row] = [];
+        rowPointsMap[row].push({x, y});
+      });
+
+      for (let row in rowPointsMap) {
+        const points = rowPointsMap[row];
+        if (points.length > 1) {
+          ctx.beginPath();
+          ctx.strokeStyle = 'rgba(0, 255, 102, 0.86)';
+          ctx.lineWidth = 2;
+          points.forEach((pt, idx) => {
+            if (idx === 0) ctx.moveTo(pt.x, pt.y);
+            else ctx.lineTo(pt.x, pt.y);
+          });
+          ctx.stroke();
+        }
+
+        points.forEach(pt => {
+          ctx.beginPath();
+          ctx.fillStyle = '#00FF66';
+          ctx.arc(pt.x, pt.y, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        });
+      }
+    }
+
+    function renderBMI() {
+      let weight = parseFloat(weightInput.value);
+      if (isNaN(weight)) {
+        const rec = records.find(r => isSameDay(r.date, selectedDate) && r.timeSlot === selectedTimeSlot);
+        if (rec) weight = rec.weight;
+        else if (records.length > 0) weight = records[records.length - 1].weight;
+        else weight = null;
+      }
+
+      let bmi = null;
+      if (userHeight && userHeight > 0 && weight && weight > 0) {
+        const hM = userHeight / 100.0;
+        bmi = weight / (hM * hM);
+      }
+
+      let category = 'NO DATA';
+      let color = '#008833';
+
+      if (bmi !== null) {
+        bmiVal.innerText = bmi.toFixed(1);
+        if (bmi < 18.5) { category = 'UNDERWEIGHT'; color = '#00CCFF'; }
+        else if (bmi < 25.0) { category = 'NORMAL'; color = '#00FF66'; }
+        else if (bmi < 30.0) { category = 'OVERWEIGHT'; color = '#FFCC00'; }
+        else { category = 'OBESE'; color = '#FF4444'; }
+      } else {
+        bmiVal.innerText = '--.-';
+      }
+
+      bmiBadge.innerText = category;
+      bmiBadge.style.color = color;
+      bmiBadge.style.borderColor = color;
+      bmiBadge.style.background = `${color}22`;
+
+      drawBmiBar(bmi, color);
+    }
+
+    function drawBmiBar(bmi, barColor) {
+      const container = bmiCanvas.parentElement;
+      bmiCanvas.width = container.clientWidth;
+      bmiCanvas.height = container.clientHeight;
+      const ctx = bmiCanvas.getContext('2d');
+      ctx.clearRect(0, 0, bmiCanvas.width, bmiCanvas.height);
+
+      const minBmi = 15.0, maxBmi = 35.0;
+      const w = bmiCanvas.width;
+      const h = bmiCanvas.height;
+
+      // Lines for 18.5 & 25.0
+      ctx.strokeStyle = '#004411';
+      ctx.lineWidth = 1;
+
+      const r18 = (18.5 - minBmi) / (maxBmi - minBmi);
+      const r25 = (25.0 - minBmi) / (maxBmi - minBmi);
+
+      ctx.beginPath();
+      ctx.moveTo(w * r18, 0); ctx.lineTo(w * r18, h);
+      ctx.moveTo(w * r25, 0); ctx.lineTo(w * r25, h);
+      ctx.stroke();
+
+      if (bmi === null) return;
+
+      const clamped = Math.max(minBmi, Math.min(maxBmi, bmi));
+      const ratio = (clamped - minBmi) / (maxBmi - minBmi);
+      const fillW = w * ratio;
+
+      ctx.fillStyle = barColor;
+      ctx.fillRect(0, 0, fillW, h);
+
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(fillW, 0); ctx.lineTo(fillW, h);
+      ctx.stroke();
+    }
+
+    window.addEventListener('resize', () => {
+      renderCalendar();
+      renderBMI();
+    });
+
+    window.onload = init;
+  </script>
+</body>
+</html>
