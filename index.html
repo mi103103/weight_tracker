@@ -43,7 +43,7 @@
       margin-bottom: 12px;
     }
     .header-title {
-      font-size: 12px;
+      font-size: 15px;
       font-weight: bold;
       letter-spacing: 1.2px;
     }
@@ -52,17 +52,17 @@
       border: 1px solid #00AA44;
       color: #00FF66;
       border-radius: 2px;
-      padding: 2px 6px;
+      padding: 4px 8px;
       cursor: pointer;
-      font-size: 12px;
+      font-size: 14px;
     }
     .refresh-btn:active {
       background: #00FF66;
       color: #000;
     }
     .combo-text {
-      font-size: 12px;
-      color: #00FF66; /* WEIGHT_TRACKERと同じ明るいグリーンに変更 */
+      font-size: 14px;
+      color: #00FF66;
       font-weight: bold;
       letter-spacing: 1.2px;
     }
@@ -82,21 +82,22 @@
       margin-bottom: 10px;
     }
     .nav-btn {
-      color: #008833;
-      font-size: 11px;
+      color: #00CC55;
+      font-size: 13px;
+      font-weight: bold;
       cursor: pointer;
     }
     .month-title {
       color: #00FF66;
       font-weight: bold;
-      font-size: 14px;
+      font-size: 16px;
     }
     .week-headers {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
       text-align: center;
-      font-size: 10px;
-      color: #006622;
+      font-size: 12px;
+      color: #00FF66; /* INPUTと同じ鮮やかなグリーンに変更 */
       font-weight: bold;
       margin-bottom: 6px;
     }
@@ -115,25 +116,27 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 12px;
+      font-size: 14px;
+      font-weight: bold;
       border-radius: 2px;
       cursor: pointer;
-      color: #004411;
+      color: #005522;
     }
     .day-cell.current-month {
-      color: #00AA44;
+      color: #00FF66; /* INPUTと同じ鮮やかなグリーンに変更 */
     }
     .day-cell.is-recorded {
-      color: #004411;
+      color: #00FF66;
     }
     .day-cell.is-today {
       border: 1px solid #00FF66;
       color: #00FF66;
       font-weight: bold;
+      background: rgba(0, 255, 102, 0.15);
     }
     .day-cell.is-selected {
-      background: rgba(0, 51, 17, 0.7);
-      border: 1px solid #00AA44;
+      background: rgba(0, 255, 102, 0.25);
+      border: 1px solid #00FF66;
       font-weight: bold;
     }
     canvas#graphCanvas {
@@ -164,16 +167,16 @@
     }
     .time-btn {
       background: #070A07;
-      border: 1px solid #005522;
-      color: #00AA44;
-      font-size: 10px;
+      border: 1px solid #00AA44;
+      color: #00FF66;
+      font-size: 12px;
       font-weight: bold;
-      padding: 2px 6px;
+      padding: 4px 8px;
       border-radius: 2px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
     }
     .time-btn.active {
       background: #00FF66;
@@ -181,8 +184,8 @@
       color: #000;
     }
     .dot {
-      width: 4px;
-      height: 4px;
+      width: 5px;
+      height: 5px;
       border-radius: 50%;
       background: #00FF66;
     }
@@ -191,7 +194,7 @@
     }
     .input-label {
       color: #00FF66;
-      font-size: 15px;
+      font-size: 17px;
       font-weight: bold;
     }
     .input-box {
@@ -206,23 +209,24 @@
       outline: none;
       color: #00FF66;
       font-family: monospace;
-      font-size: 18px;
+      font-size: 22px;
       font-weight: bold;
       width: 100%;
     }
     .term-input::placeholder {
-      color: #005522;
+      color: #006622;
     }
     .suffix {
-      color: #008833;
-      font-size: 13px;
+      color: #00CC55;
+      font-size: 15px;
+      font-weight: bold;
       margin-left: 4px;
     }
     .btn {
       font-family: monospace;
       font-weight: bold;
-      font-size: 11px;
-      padding: 6px 10px;
+      font-size: 13px;
+      padding: 8px 12px;
       border-radius: 2px;
       border: none;
       cursor: pointer;
@@ -259,22 +263,23 @@
       margin-bottom: 10px;
     }
     .bmi-badge {
-      font-size: 10px;
+      font-size: 12px;
       font-weight: bold;
-      padding: 2px 6px;
+      padding: 3px 8px;
       border-radius: 2px;
       border: 1px solid;
     }
     .bar-container {
       display: flex;
       align-items: center;
-      gap: 6px;
-      font-size: 10px;
-      color: #005522;
+      gap: 8px;
+      font-size: 12px;
+      font-weight: bold;
+      color: #00CC55;
     }
     .bar-track {
       flex: 1;
-      height: 14px;
+      height: 16px;
       background: #050B05;
       border-radius: 2px;
       position: relative;
@@ -315,10 +320,10 @@
     <!-- 3. INPUT ウィンドウ -->
     <div class="card" id="inputCard">
       <div class="card-row" style="margin-bottom: 10px;">
-        <span style="color: #00CC55; font-size: 12px;" id="dateText">&gt; DATE: -----</span>
+        <span style="color: #00FF66; font-size: 14px; font-weight: bold;" id="dateText">&gt; DATE: -----</span>
         <button class="time-btn" id="amBtn">AM <span class="dot" id="amDot" style="display:none;"></span></button>
         <button class="time-btn" id="pmBtn">PM <span class="dot" id="pmDot" style="display:none;"></span></button>
-        <span style="margin-left: auto; font-size: 10px; font-weight: bold;" id="modeBadge">[NEW]</span>
+        <span style="margin-left: auto; font-size: 12px; font-weight: bold;" id="modeBadge">[NEW]</span>
       </div>
       <div class="card-row">
         <span class="input-label">&gt; INPUT:</span>
@@ -335,7 +340,7 @@
     <div class="card">
       <div class="bmi-header">
         <span class="input-label">&gt; BMI:</span>
-        <span style="font-size: 18px; font-weight: bold;" id="bmiVal">--.-</span>
+        <span style="font-size: 22px; font-weight: bold;" id="bmiVal">--.-</span>
         <div class="bmi-badge" id="bmiBadge">NO DATA</div>
       </div>
       <div class="bar-container">
@@ -362,7 +367,7 @@
     <!-- 6. BACKUP / DATA ウィンドウ -->
     <div class="card">
       <div style="margin-bottom: 8px;">
-        <span class="input-label" style="font-size: 12px;">&gt; DATA MANAGEMENT:</span>
+        <span class="input-label" style="font-size: 14px;">&gt; DATA MANAGEMENT:</span>
       </div>
       <div class="card-row">
         <button class="btn btn-sub" id="exportBtn">EXPORT JSON</button>
