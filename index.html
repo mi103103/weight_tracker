@@ -6,15 +6,13 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="WeightTracker">
+  <meta name="theme-color" content="#0C100C">
+  
   <!-- PWA Manifest & Icons -->
-<link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icon-192.png">
-<meta name="theme-color" content="#0C100C">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon-192.png">
 
-<!-- iOS（Safari）フルスクリーン表示対応 -->
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="WeightTracker">
   <title>WEIGHT_TRACKER</title>
   <style>
     * {
@@ -64,7 +62,7 @@
     }
     .combo-text {
       font-size: 12px;
-      color: #008833;
+      color: #00FF66; /* WEIGHT_TRACKERと同じ明るいグリーンに変更 */
       font-weight: bold;
       letter-spacing: 1.2px;
     }
@@ -242,6 +240,16 @@
       color: #FF4444;
       border: 1px solid #FF4444;
     }
+    .btn-sub {
+      background: #070A07;
+      border: 1px solid #00AA44;
+      color: #00FF66;
+      flex: 1;
+    }
+    .btn-sub:active {
+      background: #00AA44;
+      color: #000;
+    }
 
     /* BMI ウィンドウ */
     .bmi-header {
@@ -323,19 +331,7 @@
       </div>
     </div>
 
-    <!-- 4. HEIGHT ウィンドウ -->
-    <div class="card">
-      <div class="card-row">
-        <span class="input-label">&gt; HEIGHT:</span>
-        <div class="input-box">
-          <input type="number" step="0.1" class="term-input" id="heightInput" placeholder="000.0">
-          <span class="suffix">CM</span>
-        </div>
-        <button class="btn btn-set" id="setHeightBtn">SET</button>
-      </div>
-    </div>
-
-    <!-- 5. BMI ウィンドウ -->
+    <!-- 4. BMI ウィンドウ -->
     <div class="card">
       <div class="bmi-header">
         <span class="input-label">&gt; BMI:</span>
@@ -348,6 +344,30 @@
           <canvas id="bmiCanvas"></canvas>
         </div>
         <span>35.0</span>
+      </div>
+    </div>
+
+    <!-- 5. HEIGHT ウィンドウ -->
+    <div class="card">
+      <div class="card-row">
+        <span class="input-label">&gt; HEIGHT:</span>
+        <div class="input-box">
+          <input type="number" step="0.1" class="term-input" id="heightInput" placeholder="000.0">
+          <span class="suffix">CM</span>
+        </div>
+        <button class="btn btn-set" id="setHeightBtn">SET</button>
+      </div>
+    </div>
+
+    <!-- 6. BACKUP / DATA ウィンドウ -->
+    <div class="card">
+      <div style="margin-bottom: 8px;">
+        <span class="input-label" style="font-size: 12px;">&gt; DATA MANAGEMENT:</span>
+      </div>
+      <div class="card-row">
+        <button class="btn btn-sub" id="exportBtn">EXPORT JSON</button>
+        <button class="btn btn-sub" id="importBtn">IMPORT JSON</button>
+        <input type="file" id="importFileInput" accept=".json" style="display: none;">
       </div>
     </div>
   </div>
@@ -383,6 +403,9 @@
     const bmiVal = document.getElementById('bmiVal');
     const bmiBadge = document.getElementById('bmiBadge');
     const bmiCanvas = document.getElementById('bmiCanvas');
+    const exportBtn = document.getElementById('exportBtn');
+    const importBtn = document.getElementById('importBtn');
+    const importFileInput = document.getElementById('importFileInput');
 
     // Initialize
     function init() {
@@ -390,6 +413,17 @@
       setupEvents();
       loadRecordToController();
       render();
+      registerServiceWorker();
+    }
+
+    function registerServiceWorker() {
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register('./sw.js')
+            .then(reg => console.log('Service Worker Registered:', reg))
+            .catch(err => console.error('Service Worker Registration Failed:', err));
+        });
+      }
     }
 
     function loadData() {
@@ -485,6 +519,79 @@
         }
         renderBMI();
       };
+
+      // バックアップ機能の処理
+      exportBtn.onclick = exportData;
+      importBtn.onclick = () => importFileInput.click();
+      importFileInput.onchange = importData;
+    }
+
+    function exportData() {
+      const backupData = {
+        height: userHeight,
+        records: records.map(r => ({
+          date: r.date.toISOString(),
+          timeSlot: r.timeSlot,
+          weight: r.weight
+        }))
+      };
+
+      const jsonStr = JSON.stringify(backupData, null, 2);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, '0');
+      const d = String(now.getDate()).padStart(2, '0');
+      const filename = `weight_data_${y}${m}${d}.json`;
+
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function importData(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const parsed = JSON.parse(event.target.result);
+          
+          if (parsed.height !== undefined) {
+            userHeight = parsed.height;
+            if (userHeight !== null) {
+              localStorage.setItem(HEIGHT_STORAGE_KEY, userHeight.toString());
+              heightInput.value = userHeight.toFixed(1);
+            } else {
+              localStorage.removeItem(HEIGHT_STORAGE_KEY);
+              heightInput.value = '';
+            }
+          }
+
+          if (Array.isArray(parsed.records)) {
+            records = parsed.records.map(r => ({
+              date: new Date(r.date),
+              timeSlot: r.timeSlot,
+              weight: parseFloat(r.weight)
+            })).filter(r => !isNaN(r.date.getTime()) && !isNaN(r.weight));
+
+            saveRecords();
+          }
+
+          loadRecordToController();
+          render();
+          alert('データの読み込みが完了しました');
+        } catch (err) {
+          alert('ファイルの読み込みに失敗しました。正しいJSONファイルか確認してください。');
+        }
+        importFileInput.value = '';
+      };
+      reader.readAsText(file);
     }
 
     function isSameDay(a, b) {
@@ -763,14 +870,6 @@
     });
 
     window.onload = init;
-  // Service Workerの登録
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('./sw.js')
-      .then((reg) => console.log('Service Worker registered:', reg))
-      .catch((err) => console.error('Service Worker registration failed:', err));
-  });
-}
   </script>
 </body>
 </html>
