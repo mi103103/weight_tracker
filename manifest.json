@@ -1,6 +1,6 @@
 {
-  "name": "WEIGHT TRACKER",
-  "short_name": "WeightTracker",
+  "name": "WLOG",
+  "short_name": "WLOG",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#0C100C",
