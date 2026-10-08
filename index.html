@@ -167,6 +167,17 @@
       align-items: center;
       gap: 8px;
     }
+    .card-row-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .card-row-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
     .time-btn {
       background: #070A07;
       border: 1px solid #00AA44;
@@ -245,6 +256,8 @@
       background: #330000;
       color: #FF4444;
       border: 1px solid #FF4444;
+      padding: 4px 8px;
+      font-size: 12px;
     }
     .btn-sub {
       background: #070A07;
@@ -321,10 +334,13 @@
 
     <!-- 3. INPUT ウィンドウ -->
     <div class="card" id="inputCard">
-      <div class="card-row" style="margin-bottom: 10px;">
-        <span style="color: #00FF66; font-size: 14px; font-weight: bold;" id="dateText">&gt; DATE: -----</span>
-        <button class="time-btn" id="amBtn">AM <span class="dot" id="amDot" style="display:none;"></span></button>
-        <button class="time-btn" id="pmBtn">PM <span class="dot" id="pmDot" style="display:none;"></span></button>
+      <div class="card-row-header">
+        <div class="card-row-left">
+          <span style="color: #00FF66; font-size: 14px; font-weight: bold;" id="dateText">&gt; DATE: -----</span>
+          <button class="time-btn" id="amBtn">AM <span class="dot" id="amDot" style="display:none;"></span></button>
+          <button class="time-btn" id="pmBtn">PM <span class="dot" id="pmDot" style="display:none;"></span></button>
+        </div>
+        <button type="button" class="btn btn-del" id="delBtn" style="display:none;">DEL</button>
       </div>
       <form id="weightForm" action="javascript:void(0);">
         <div class="card-row">
@@ -333,7 +349,6 @@
             <input type="number" step="0.1" class="term-input" id="weightInput" placeholder="00.0" inputmode="decimal">
             <span class="suffix">KG</span>
           </div>
-          <button type="button" class="btn btn-del" id="delBtn" style="display:none;">DEL</button>
           <button type="submit" class="btn btn-main" id="saveBtn">RECORD</button>
         </div>
       </form>
