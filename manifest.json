@@ -1,0 +1,20 @@
+{
+  "name": "WEIGHT_TRACKER",
+  "short_name": "Weight",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#0C100C",
+  "theme_color": "#0C100C",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192/0C100C/00FF66?text=WEIGHT",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://via.placeholder.com/512/0C100C/00FF66?text=WEIGHT",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
