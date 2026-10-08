@@ -6,8 +6,6 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#0C100C">
   <title>WEIGHT_TRACKER</title>
   <style>
     * {
@@ -106,7 +104,7 @@
       z-index: 2;
     }
     .day-cell {
-      aspect-ratio: 0.9;
+      aspect-ratio: 9 / 16;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -381,40 +379,35 @@
     function init() {
       loadData();
       setupEvents();
+      loadRecordToController();
       render();
     }
 
     function loadData() {
+      // 身長の読み込み
       const savedHeight = localStorage.getItem(HEIGHT_STORAGE_KEY);
-      if (savedHeight) {
+      if (savedHeight !== null && savedHeight !== '') {
         userHeight = parseFloat(savedHeight);
-        heightInput.value = userHeight.toFixed(1);
+        if (!isNaN(userHeight)) {
+          heightInput.value = userHeight.toFixed(1);
+        }
       }
 
+      // 体重記録の読み込み
       const savedRecords = localStorage.getItem(STORAGE_KEY);
-      if (savedRecords) {
+      if (savedRecords !== null) {
         try {
-          records = JSON.parse(savedRecords).map(r => ({
+          const parsed = JSON.parse(savedRecords);
+          records = parsed.map(r => ({
             ...r,
             date: new Date(r.date)
           }));
         } catch(e) {
-          loadDefaultRecords();
+          records = [];
         }
       } else {
-        loadDefaultRecords();
+        records = [];
       }
-    }
-
-    function loadDefaultRecords() {
-      const today = new Date();
-      today.setHours(0,0,0,0);
-      records = [
-        { date: new Date(today.getTime() - 86400000 * 2), timeSlot: 'am', weight: 65.8 },
-        { date: new Date(today.getTime() - 86400000), timeSlot: 'am', weight: 65.5 },
-        { date: new Date(today.getTime()), timeSlot: new Date().getHours() < 12 ? 'am' : 'pm', weight: 65.2 }
-      ];
-      saveRecords();
     }
 
     function saveRecords() {
@@ -469,7 +462,7 @@
         const val = parseFloat(heightInput.value);
         if (!isNaN(val)) {
           userHeight = val;
-          localStorage.setItem(HEIGHT_STORAGE_KEY, val);
+          localStorage.setItem(HEIGHT_STORAGE_KEY, val.toString());
           renderBMI();
         }
       };
@@ -478,6 +471,9 @@
       heightInput.oninput = () => {
         const val = parseFloat(heightInput.value);
         userHeight = !isNaN(val) ? val : null;
+        if (userHeight !== null) {
+          localStorage.setItem(HEIGHT_STORAGE_KEY, userHeight.toString());
+        }
         renderBMI();
       };
     }
@@ -568,8 +564,6 @@
       if (firstDayWeekday < 0) firstDayWeekday = 6;
 
       const daysInMonth = new Date(year, month + 1, 0).getDate();
-      const prevMonthDays = new Date(year, month, 0).getDate();
-
       const startDate = new Date(year, month, 1 - firstDayWeekday);
 
       calendarGrid.innerHTML = '';
